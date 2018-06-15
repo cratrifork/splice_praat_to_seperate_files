@@ -6,13 +6,14 @@ from pydub import AudioSegment
 
 
 def print_usage():
-    print 'splice_praat_into_seperate_files.py -i <inputfile> -t <TextGridFile> -o <outputfolder> -s \"textToSearchFor\"'
+    print(
+        'splice_praat_into_seperate_files.py -i <inputfile> -t <TextGridFile> -o <outputfolder> -s \"textToSearchFor\"')
 
 
 def main(argv):
-    inputTextGridFile = ''
-    inputFile = ''
-    outputFolder = 'output/'
+    input_textgrid_file = ''
+    input_file = ''
+    output_folder = 'output/'  # Default
     search_for_mark = ''
     try:
         # opts is a list of returning key-value pairs, args is the options left after striped
@@ -27,38 +28,37 @@ def main(argv):
             print_usage()
             sys.exit()
         elif opt in ("-i", "--ifile"):
-            inputFile = arg
+            input_file = arg
         elif opt in ("-t", "--tfile"):
-            inputTextGridFile = arg
+            input_textgrid_file = arg
         elif opt in ("-o", "--ofolder"):
-            outputFolder = arg
+            output_folder = arg
         elif opt in ("-s", "--search_string"):
             search_for_mark = arg
-    print 'Input file is: ', inputFile
-    print 'Input TextGrid: ', inputTextGridFile
-    print 'Output folder is: ', outputFolder
-    print 'Searching for: ', search_for_mark
+    print('Input file is: ' + input_file)
+    print('Input TextGrid: ' + input_textgrid_file)
+    print('Output folder is: ' + output_folder)
+    print('Searching for: ' + search_for_mark)
+
+    splice_ts(input_file, output_folder, input_textgrid_file, search_for_mark)
 
 
-    splice_ts(inputFile, outputFolder, inputTextGridFile, search_for_mark)
-
-
-def splice_ts(inputFile, outputFolder, textgrid_file, search_for):
+def splice_ts(input_file, output_folder, textgrid_file, search_for):
     tg = textgrid.TextGrid.fromFile(textgrid_file)
-    sound = AudioSegment.from_mp3(inputFile)
+    sound = AudioSegment.from_mp3(input_file)
     count = 0
-    for interval in xrange(len(tg[0])):
+    for interval in range(len(tg[0])):
         stuff = tg[0][interval]
 
         if stuff.mark == search_for:
             count = count + 1
-            start_of_interval = int(stuff.minTime*1000)  # Get time in milliseconds
-            end_of_interval = int(stuff.maxTime*1000)  # Convert to integer
+            start_of_interval = int(stuff.minTime * 1000)  # Get time in milliseconds
+            end_of_interval = int(stuff.maxTime * 1000)  # Convert to integer
 
             # Concatenate
             interesting_part = sound[start_of_interval:end_of_interval]
 
-            interesting_part.export(outputFolder + search_for + str(count) + ".mp3", format="mp3")
+            interesting_part.export(output_folder + search_for + str(count) + ".mp3", format="mp3")
 
             print(str(start_of_interval) + " -> " + str(end_of_interval) + " :: " + stuff.mark)
 
