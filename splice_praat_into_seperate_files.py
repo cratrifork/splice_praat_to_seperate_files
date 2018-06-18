@@ -7,7 +7,8 @@ from pydub import AudioSegment
 
 def print_usage():
     print(
-        'splice_praat_into_seperate_files.py -i <inputfile> -t <TextGridFile> -o <outputfolder> -s \"textToSearchFor\"')
+        'splice_praat_into_seperate_files.py -i <inputfile> -t <TextGridFile> -o <outputfolder> '
+        '-s \"textToSearchFor\" -l <line>')
 
 
 def main(argv):
@@ -15,11 +16,12 @@ def main(argv):
     input_file = ''
     output_folder = 'output/'  # Default
     search_for_mark = ''
+    line = 0
     try:
         # opts is a list of returning key-value pairs, args is the options left after striped
         # the short options 'hi:o:', if an option requires an input, it should be followed by a ":"
         # the long options 'ifile=' is an option that requires an input, followed by a "="
-        opts, args = getopt.getopt(argv, "hi:o:t:s:", ["ifile=", "tfile=", "ofolder=", "search_string="])
+        opts, args = getopt.getopt(argv, "hi:o:t:s:l:", ["ifile=", "tfile=", "ofolder=", "search_string=", "line="])
     except getopt.GetoptError:
         print_usage()
         sys.exit(2)
@@ -35,20 +37,28 @@ def main(argv):
             output_folder = arg
         elif opt in ("-s", "--search_string"):
             search_for_mark = arg
+        elif opt in ("-l", "--line"):
+            line = arg
+
+    # If no textgrid file has been input, use filename with .TextGrid afterwards
+    if input_textgrid_file == '':
+        input_textgrid_file = input_file.split('.')[0] + ".TextGrid"
+
     print('Input file is: ' + input_file)
     print('Input TextGrid: ' + input_textgrid_file)
     print('Output folder is: ' + output_folder)
     print('Searching for: ' + search_for_mark)
+    print('Looking in line: ' + str(line))
 
-    splice_ts(input_file, output_folder, input_textgrid_file, search_for_mark)
+    splice_ts(input_file, output_folder, input_textgrid_file, search_for_mark, line)
 
 
-def splice_ts(input_file, output_folder, textgrid_file, search_for):
+def splice_ts(input_file, output_folder, textgrid_file, search_for, line):
     tg = textgrid.TextGrid.fromFile(textgrid_file)
     sound = AudioSegment.from_mp3(input_file)
     count = 0
-    for interval in range(len(tg[0])):
-        stuff = tg[0][interval]
+    for interval in range(len(tg[line])):
+        stuff = tg[line][interval]
 
         if stuff.mark == search_for:
             count = count + 1
